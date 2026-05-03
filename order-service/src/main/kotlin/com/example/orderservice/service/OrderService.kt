@@ -1,18 +1,21 @@
 package com.example.orderservice.service
 
-import com.example.orderservice.client.InventoryClient
-import com.example.orderservice.client.NotificationClient
+import com.example.orderservice.event.OrderCreatedEvent
 import com.example.orderservice.model.CreateOrderRequest
 import com.example.orderservice.model.Order
 import com.example.orderservice.model.OrderStatus
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.slf4j.LoggerFactory
+import org.springframework.kafka.core.KafkaTemplate
 import org.springframework.stereotype.Service
 import java.util.concurrent.ConcurrentHashMap
 
+const val TOPIC_ORDERS_CREATED = "orders.created"
+
 @Service
 class OrderService(
-    private val inventoryClient: InventoryClient,
-    private val notificationClient: NotificationClient,
+    private val kafkaTemplate: KafkaTemplate<String, String>,
+    private val objectMapper: ObjectMapper,
 ) {
     private val logger = LoggerFactory.getLogger(javaClass)
     private val orders = ConcurrentHashMap<String, Order>()
@@ -22,29 +25,24 @@ class OrderService(
             customerId = request.customerId,
             productId = request.productId,
             quantity = request.quantity,
+            status = OrderStatus.CONFIRMED,
         )
 
-        logger.info("Creating order ${order.id} for customer ${order.customerId}")
+        logger.info("Order ${order.id} created for customer ${order.customerId}")
 
-        val reservationResult = inventoryClient.reserveStock(order.productId, order.quantity)
+        val event = OrderCreatedEvent(
+            orderId = order.id,
+            customerId = order.customerId,
+            productId = order.productId,
+            quantity = order.quantity,
+        )
 
-        val finalOrder = if (reservationResult.success) {
-            logger.info("Stock reserved for order ${order.id}. Remaining stock: ${reservationResult.remainingStock}")
+        val payload = objectMapper.writeValueAsString(event)
+        kafkaTemplate.send(TOPIC_ORDERS_CREATED, order.id, payload)
+        logger.info("Published OrderCreatedEvent for order ${order.id} to topic $TOPIC_ORDERS_CREATED")
 
-            notificationClient.sendNotification(
-                customerId = order.customerId,
-                subject = "Order Confirmed",
-                message = "Your order ${order.id} for ${order.quantity}x ${order.productId} has been confirmed.",
-            )
-
-            order.copy(status = OrderStatus.CONFIRMED)
-        } else {
-            logger.warn("Insufficient stock for order ${order.id}")
-            order.copy(status = OrderStatus.FAILED)
-        }
-
-        orders[finalOrder.id] = finalOrder
-        return finalOrder
+        orders[order.id] = order
+        return order
     }
 
     fun getOrder(orderId: String): Order? = orders[orderId]
