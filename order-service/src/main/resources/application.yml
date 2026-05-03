@@ -1,15 +1,11 @@
 spring:
   application:
     name: order-service
+  kafka:
+    bootstrap-servers: localhost:9092
 
 server:
   port: 8080
-
-services:
-  inventory:
-    url: http://localhost:8081
-  notification:
-    url: http://localhost:8082
 
 management:
   endpoints:
