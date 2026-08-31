@@ -25,7 +25,7 @@ class OrderService(
             customerId = request.customerId,
             productId = request.productId,
             quantity = request.quantity,
-            status = OrderStatus.CONFIRMED,
+            status = OrderStatus.PENDING,
         )
 
         logger.info("Order ${order.id} created for customer ${order.customerId}")

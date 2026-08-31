@@ -23,8 +23,9 @@ class OrderEventConsumer(
         notificationService.sendNotification(
             SendNotificationRequest(
                 customerId = event.customerId,
-                subject = "Order Confirmed",
-                message = "Your order ${event.orderId} for ${event.quantity}x ${event.productId} has been confirmed.",
+                subject = "Order Received",
+                message = "Your order ${event.orderId} for ${event.quantity}x ${event.productId} " +
+                    "has been received and is being processed.",
             )
         )
     }

@@ -22,9 +22,12 @@ class OrderEventConsumer(
         val (success, remaining) = inventoryService.reserveStock(event.productId, event.quantity)
 
         if (success) {
-            logger.info("Reserved ${event.quantity} units of ${event.productId} for order ${event.orderId}. Remaining: $remaining")
+            logger.info(
+                "Reserved ${event.quantity} units of ${event.productId} " +
+                    "for order ${event.orderId}. Remaining: $remaining"
+            )
         } else {
-            logger.warn("Could not reserve stock for order ${event.orderId} — insufficient inventory")
+            logger.warn("Could not reserve stock for order ${event.orderId}: insufficient inventory")
         }
     }
 }
