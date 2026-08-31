@@ -1,10 +1,10 @@
-# Event-Driven Microservices with Kotlin, Spring Boot, and Apache Kafka
+# Messaging in Microservices: A Beginner's Guide to Apache Kafka
 
 Demo project for the JetBrains blog tutorial
-**"Building Event-Driven Microservices with Kotlin and Apache Kafka"**.
+**"Messaging in Microservices: A Beginner's Guide to Apache Kafka"**.
 
-The project follows a single e-commerce scenario — processing customer orders
-across three independent services — and evolves it through three branches, each
+The project follows a single e-commerce scenario, processing customer orders
+across three independent services, and evolves it through three branches, each
 corresponding to a section of the tutorial.
 
 
@@ -12,9 +12,9 @@ corresponding to a section of the tutorial.
 
 An e-commerce backend receives orders and needs to coordinate between three services:
 
-- **Order Service** — accepts incoming orders via REST
-- **Inventory Service** — reserves stock for each confirmed order
-- **Notification Service** — sends a confirmation to the customer
+- **Order Service:** accepts incoming orders via REST
+- **Inventory Service:** reserves stock for each confirmed order
+- **Notification Service:** sends a confirmation to the customer
 
 The tutorial starts with the services talking to each other synchronously over HTTP,
 then introduces Apache Kafka to decouple them, and finally improves the Kafka
@@ -22,7 +22,9 @@ integration for production-readiness.
 
 ## Branch Guide
 
-### `starter` — Synchronous REST
+Each branch corresponds to one stage of the tutorial. Start with the synchronous implementation, then compare it with the simple and improved event-driven versions.
+
+### `starter`: Synchronous REST
 
 ```
 POST /orders
@@ -39,9 +41,31 @@ load, and latency that compounds as you add more downstream services.
 
 Key files to read:
 
-- [`order-service/src/main/kotlin/com/example/orderservice/service/OrderService.kt`](order-service/src/main/kotlin/com/example/orderservice/service/OrderService.kt) — orchestrates the synchronous calls
-- [`order-service/src/main/kotlin/com/example/orderservice/client/InventoryClient.kt`](order-service/src/main/kotlin/com/example/orderservice/client/InventoryClient.kt) — Spring `RestClient` wrapper
-- [`order-service/src/main/kotlin/com/example/orderservice/client/NotificationClient.kt`](order-service/src/main/kotlin/com/example/orderservice/client/NotificationClient.kt) — Spring `RestClient` wrapper
+- [`order-service/src/main/kotlin/com/example/orderservice/service/OrderService.kt`](order-service/src/main/kotlin/com/example/orderservice/service/OrderService.kt): orchestrates the synchronous calls
+- [`order-service/src/main/kotlin/com/example/orderservice/client/InventoryClient.kt`](order-service/src/main/kotlin/com/example/orderservice/client/InventoryClient.kt): Spring `RestClient` wrapper
+- [`order-service/src/main/kotlin/com/example/orderservice/client/NotificationClient.kt`](order-service/src/main/kotlin/com/example/orderservice/client/NotificationClient.kt): Spring `RestClient` wrapper
+
+### `simple-solution`: String-Based Apache Kafka Events
+
+This branch replaces the service-to-service REST calls with an `orders.created`
+topic. The Order Service publishes JSON strings, while the Inventory and
+Notification Services deserialize and process them in separate consumer groups.
+
+```bash
+git checkout simple-solution
+docker compose up -d kafka
+```
+
+### `improved-solution`: Typed Events and Failure Handling
+
+The final branch uses typed JSON events, explicit topic declarations, Boot-managed
+producer and consumer configuration, partition concurrency, retries, and an
+`orders.created-dlt` dead-letter topic.
+
+```bash
+git checkout improved-solution
+docker compose up -d kafka
+```
 
 
 ## Prerequisites
@@ -54,7 +78,7 @@ Key files to read:
 No Kafka installation needed. Docker Compose handles it.
 
 
-## Running the code
+## Running the Code
 
 The starter requires no Docker. All three services talk over plain HTTP. The other two branches require running `docker compose up` to start the Kafka container.
 
@@ -67,7 +91,7 @@ git checkout starter
 ### 2. Start the services (three separate terminals)
 
 ```bash
-# Terminal 1 — Inventory Service must start first (Order Service calls it)
+# Terminal 1: Inventory Service must start first (Order Service calls it)
 ./gradlew :inventory-service:bootRun
 
 # Terminal 2

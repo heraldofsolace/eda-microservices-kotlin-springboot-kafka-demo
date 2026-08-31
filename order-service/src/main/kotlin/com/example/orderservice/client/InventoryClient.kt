@@ -11,7 +11,7 @@ data class ReserveStockResponse(val success: Boolean, val remainingStock: Int)
 @Component
 class InventoryClient(
     restClientBuilder: RestClient.Builder,
-    @param:Value("\${services.inventory.url}") private val inventoryUrl: String,
+    @Value("\${services.inventory.url}") private val inventoryUrl: String,
 ) {
     private val restClient = restClientBuilder.baseUrl(inventoryUrl).build()
 
@@ -22,5 +22,5 @@ class InventoryClient(
             .body(ReserveStockRequest(productId, quantity))
             .retrieve()
             .body<ReserveStockResponse>()
-            ?: throw IllegalStateException("No response from inventory service")
+            ?: error("No response from inventory service")
 }

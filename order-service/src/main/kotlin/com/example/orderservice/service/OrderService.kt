@@ -29,7 +29,10 @@ class OrderService(
         val reservationResult = inventoryClient.reserveStock(order.productId, order.quantity)
 
         val finalOrder = if (reservationResult.success) {
-            logger.info("Stock reserved for order ${order.id}. Remaining stock: ${reservationResult.remainingStock}")
+            logger.info(
+                "Stock reserved for order ${order.id}. " +
+                    "Remaining stock: ${reservationResult.remainingStock}"
+            )
 
             notificationClient.sendNotification(
                 customerId = order.customerId,

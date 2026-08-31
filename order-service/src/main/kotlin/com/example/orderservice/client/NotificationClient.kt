@@ -14,7 +14,7 @@ data class SendNotificationRequest(
 @Component
 class NotificationClient(
     restClientBuilder: RestClient.Builder,
-    @param:Value("\${services.notification.url}") private val notificationUrl: String,
+    @Value("\${services.notification.url}") private val notificationUrl: String,
 ) {
     private val restClient = restClientBuilder.baseUrl(notificationUrl).build()
 
