@@ -23,7 +23,7 @@ class OrderService(
             customerId = request.customerId,
             productId = request.productId,
             quantity = request.quantity,
-            status = OrderStatus.CONFIRMED,
+            status = OrderStatus.PENDING,
         )
 
         val event = OrderCreatedEvent(
@@ -36,14 +36,14 @@ class OrderService(
         // Use orderId as the message key so all events for one order land on the same partition,
         // preserving ordering guarantees per order.
         kafkaTemplate.send(TOPIC_ORDERS_CREATED, order.id, event)
-            .whenComplete { result, ex ->
-                if (ex != null) {
-                    logger.error("Failed to publish OrderCreatedEvent for order ${order.id}", ex)
+            .whenComplete { result, exception ->
+                if (exception != null) {
+                    logger.error("Failed to publish OrderCreatedEvent for order ${order.id}", exception)
                 } else {
                     logger.info(
                         "Published OrderCreatedEvent for order ${order.id} " +
-                            "→ partition ${result.recordMetadata.partition()}, " +
-                            "offset ${result.recordMetadata.offset()}"
+                            "to partition ${result.recordMetadata.partition()} " +
+                            "at offset ${result.recordMetadata.offset()}"
                     )
                 }
             }

@@ -14,4 +14,11 @@ class KafkaTopicConfig {
             .partitions(3)
             .replicas(1)
             .build()
+
+    @Bean
+    fun ordersCreatedDlt(): NewTopic =
+        TopicBuilder.name("orders.created-dlt")
+            .partitions(3)
+            .replicas(1)
+            .build()
 }

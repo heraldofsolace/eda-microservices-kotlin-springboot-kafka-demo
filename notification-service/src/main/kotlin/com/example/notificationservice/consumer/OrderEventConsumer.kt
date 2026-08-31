@@ -3,9 +3,6 @@ package com.example.notificationservice.consumer
 import com.example.notificationservice.event.OrderCreatedEvent
 import com.example.notificationservice.model.SendNotificationRequest
 import com.example.notificationservice.service.NotificationService
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.KafkaHeaders
@@ -18,8 +15,6 @@ class OrderEventConsumer(private val notificationService: NotificationService) {
 
     @KafkaListener(
         topics = ["orders.created"],
-        groupId = "\${spring.kafka.consumer.group-id}",
-        containerFactory = "kafkaListenerContainerFactory",
     )
     fun handleOrderCreated(
         event: OrderCreatedEvent,
@@ -31,21 +26,13 @@ class OrderEventConsumer(private val notificationService: NotificationService) {
                 "[partition=$partition, offset=$offset]"
         )
 
-        runBlocking {
-            sendNotificationAsync(event)
-        }
-    }
-
-    private suspend fun sendNotificationAsync(event: OrderCreatedEvent) {
-        withContext(Dispatchers.IO) {
-            notificationService.sendNotification(
-                SendNotificationRequest(
-                    customerId = event.customerId,
-                    subject = "Order Confirmed",
-                    message = "Your order ${event.orderId} for ${event.quantity}x ${event.productId} " +
-                        "has been confirmed.",
-                )
+        notificationService.sendNotification(
+            SendNotificationRequest(
+                customerId = event.customerId,
+                subject = "Order Received",
+                message = "Your order ${event.orderId} for ${event.quantity}x ${event.productId} " +
+                    "has been received and is being processed.",
             )
-        }
+        )
     }
 }
