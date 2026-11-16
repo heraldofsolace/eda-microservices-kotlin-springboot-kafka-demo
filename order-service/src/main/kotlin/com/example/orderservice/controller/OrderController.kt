@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 class OrderController(private val orderService: OrderService) {
 
     @PostMapping
-    fun createOrder(@RequestBody request: CreateOrderRequest): ResponseEntity<Order> {
+    suspend fun createOrder(@RequestBody request: CreateOrderRequest): ResponseEntity<Order> {
         val order = orderService.createOrder(request)
         return ResponseEntity.status(HttpStatus.CREATED).body(order)
     }

@@ -60,7 +60,10 @@ docker compose up -d kafka
 
 The final branch uses typed JSON events, explicit topic declarations, Boot-managed
 producer and consumer configuration, partition concurrency, retries, and an
-`orders.created-dlt` dead-letter topic.
+`orders.created-dlt` dead-letter topic. The Order Service awaits the
+`CompletableFuture` returned by `KafkaTemplate.send()` from a `suspend` function,
+so `POST /orders` returns `201` only after the broker acknowledges the event and
+`503` if publishing fails.
 
 ```bash
 git checkout improved-solution
